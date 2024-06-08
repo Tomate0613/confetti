@@ -148,7 +148,7 @@ public class ConfettiParticle {
         }
 
         double getOffset() {
-            return ((lifetime / (double) MAX_LIFETIME_ON_FLOOR)) * .02 + rotationAxis.x * .005;
+            return ((lifetime / (double) MAX_LIFETIME_ON_FLOOR)) * .02 + rotationAxis.x * .0015;
         }
 
         void offsetY(double offset) {
