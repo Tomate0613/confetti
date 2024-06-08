@@ -126,6 +126,11 @@ public class ConfettiParticle {
             this.zd -= this.zd * 0.075;
             this.zd += (Math.random() - .5) * horizontalSpeed;
 
+            if(wasStoppedByCollision) {
+                this.xd = 0;
+                this.zd = 0;
+            }
+
             this.move(this.xd, this.yd, this.zd);
 
             Quaternionf deltaRotation = new Quaternionf().rotateAxis(rotationSpeed, rotationAxis.x, rotationAxis.y, rotationAxis.z);
