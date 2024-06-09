@@ -1,6 +1,7 @@
 package dev.doublekekse.confetti.particle;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import dev.doublekekse.confetti.config.ConfettiConfig;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
 import net.minecraft.client.Camera;
@@ -23,6 +24,10 @@ public class ConfettiParticle {
 
         @Override
         public Particle createParticle(SimpleParticleType simpleParticleType, ClientLevel clientLevel, double x, double y, double z, double dX, double dY, double dZ) {
+            if(!ConfettiConfig.ENABLED) {
+                return null;
+            }
+
             ConfettiPieceParticle overlayParticle = new ConfettiPieceParticle(clientLevel, x, y, z, dX, dY, dZ);
             overlayParticle.pickSprite(this.sprite);
             return overlayParticle;
@@ -158,6 +163,10 @@ public class ConfettiParticle {
         }
 
         protected void checkLifetime() {
+            if(!ConfettiConfig.ENABLED) {
+                this.lifetime = 0;
+            }
+
             if (this.lifetime-- <= 0) {
                 this.remove();
             }

@@ -3,7 +3,7 @@
   "id": "confetti",
   "version": "${version}",
   "name": "Confetti",
-  "description": "",
+  "description": "Adds confetti particles to the game, which can be used by other mods",
   "authors": [],
   "contact": {
     "repo": "https://github.com/TomConfettite0613/festly-utils"
@@ -17,6 +17,9 @@
     ],
     "main": [
       "dev.doublekekse.confetti.Confetti"
+    ],
+    "modmenu": [
+      "dev.doublekekse.confetti.compat.modmenu.ModMenuApiImpl"
     ]
   },
   "mixins": [
