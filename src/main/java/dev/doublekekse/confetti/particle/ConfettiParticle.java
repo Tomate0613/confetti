@@ -39,22 +39,25 @@ public class ConfettiParticle {
         static final int MAX_LIFETIME = 2500;
         static final int MAX_LIFETIME_ON_FLOOR = 500;
         static final float TERMINAL_VELOCITY = .24f;
+        static final float GRAVITY = -0.04f;
+        static final double MAX_ROTATION_SPEED = .5;
+        static final float HORIZONTAL_SPEED = 0.04f;
 
         ConfettiPieceParticle(ClientLevel clientLevel, double x, double y, double z, double dX, double dY, double dZ) {
             super(clientLevel, x, y, z);
 
             this.lifetime = MAX_LIFETIME;
-            this.gravity = -0.04F;
+            this.gravity = GRAVITY;
 
-            this.xd = dX * .1;
-            this.yd = dY * .1;
-            this.zd = dZ * .1;
+            this.xd = dX;
+            this.yd = dY;
+            this.zd = dZ;
 
             this.rotation = new Quaternionf();
             this.oldRotation = this.rotation;
             this.rotation.rotateXYZ((float) (Math.random() * Math.PI), (float) (Math.random() * Math.PI), (float) (Math.random() * Math.PI));
             this.rotationAxis = new Vector3f(random.nextFloat(), random.nextFloat(), random.nextFloat()).normalize();
-            this.rotationSpeed = (float) (Math.random() * .5);
+            this.rotationSpeed = (float) (Math.random() * MAX_ROTATION_SPEED);
 
             this.setColor((float) Math.random(), (float) Math.random(), (float) Math.random());
         }
@@ -116,15 +119,13 @@ public class ConfettiParticle {
                 this.yd = -TERMINAL_VELOCITY;
             }
 
-            float horizontalSpeed = 0.04f;
-
-            this.yd += (Math.random() - .5) * horizontalSpeed;
+            this.yd += (Math.random() - .5) * HORIZONTAL_SPEED;
 
             this.xd -= this.xd * 0.075;
-            this.xd += (Math.random() - .5) * horizontalSpeed;
+            this.xd += (Math.random() - .5) * HORIZONTAL_SPEED;
 
             this.zd -= this.zd * 0.075;
-            this.zd += (Math.random() - .5) * horizontalSpeed;
+            this.zd += (Math.random() - .5) * HORIZONTAL_SPEED;
 
             if(wasStoppedByCollision) {
                 this.xd = 0;
