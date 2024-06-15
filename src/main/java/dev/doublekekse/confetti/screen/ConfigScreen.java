@@ -5,6 +5,8 @@ import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 
+import java.io.IOException;
+
 public class ConfigScreen extends Screen {
     Screen previousScreen;
 
@@ -33,7 +35,14 @@ public class ConfigScreen extends Screen {
 
         var doneButton = Button.builder(
                 Component.literal("Done"),
-                button -> onClose()
+                button -> {
+                    try {
+                        ConfettiConfig.save();
+                        onClose();
+                    } catch (IOException e) {
+                        throw new RuntimeException(e);
+                    }
+                }
             )
             .bounds(width / 2 - buttonWidth / 2, height - buttonHeight - 10, buttonWidth, buttonHeight);
 
