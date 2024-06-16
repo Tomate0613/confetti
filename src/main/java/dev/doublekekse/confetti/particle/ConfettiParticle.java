@@ -8,6 +8,7 @@ import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
 import net.minecraft.core.particles.SimpleParticleType;
+import net.minecraft.util.Mth;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -42,7 +43,7 @@ public class ConfettiParticle {
         float rotationSpeed;
 
         static final int MAX_LIFETIME = 2500;
-        static final int MAX_LIFETIME_ON_FLOOR = 300;
+        static final int MAX_LIFETIME_ON_FLOOR = 350;
         static final float TERMINAL_VELOCITY = .24f;
         static final float GRAVITY = -0.04f;
         static final double MAX_ROTATION_SPEED = .5;
@@ -175,6 +176,10 @@ public class ConfettiParticle {
 
         @Override
         public float getQuadSize(float f) {
+            if(this.lifetime < 5) {
+                return Mth.lerp(.1f, 0f, ((lifetime - f) / 5));
+            }
+
             return .1f;
         }
     }
