@@ -176,8 +176,8 @@ public class ConfettiParticle {
 
         @Override
         public float getQuadSize(float f) {
-            if(this.lifetime < 5) {
-                return Mth.lerp(.1f, 0f, ((lifetime - f) / 5));
+            if(this.lifetime - f < 5) {
+                return Mth.clampedLerp(.1f, 0f, ((5 - (lifetime - f)) / 5));
             }
 
             return .1f;
