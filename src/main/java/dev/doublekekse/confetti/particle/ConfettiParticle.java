@@ -125,6 +125,7 @@ public class ConfettiParticle {
             }
 
             this.yd += (Math.random() - .5) * HORIZONTAL_SPEED;
+            this.yd -= this.yd * 0.075;
 
             this.xd -= this.xd * 0.075;
             this.xd += (Math.random() - .5) * HORIZONTAL_SPEED;
