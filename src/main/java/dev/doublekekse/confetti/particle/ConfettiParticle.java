@@ -42,7 +42,7 @@ public class ConfettiParticle {
         float rotationSpeed;
 
         static final int MAX_LIFETIME = 2500;
-        static final int MAX_LIFETIME_ON_FLOOR = 500;
+        static final int MAX_LIFETIME_ON_FLOOR = 300;
         static final float TERMINAL_VELOCITY = .24f;
         static final float GRAVITY = -0.04f;
         static final double MAX_ROTATION_SPEED = .5;
