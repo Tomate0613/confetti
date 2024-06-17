@@ -4,6 +4,8 @@ import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.doublekekse.confetti.config.ConfettiConfig;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
+import net.fabricmc.fabric.api.client.particle.v1.FabricSpriteProvider;
+import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.minecraft.client.Camera;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
@@ -15,21 +17,30 @@ import org.joml.Vector3f;
 
 public class ConfettiParticle {
     @Environment(value = EnvType.CLIENT)
-    public static class Provider
-        implements ParticleProvider<SimpleParticleType> {
+    public static class Provider implements ParticleProvider<SimpleParticleType> {
         private final SpriteSet sprite;
+        private final ConfettiOptions options;
 
         public Provider(SpriteSet spriteSet) {
+            this(spriteSet, new ConfettiOptions.Builder().build());
+        }
+
+        private Provider(SpriteSet spriteSet, ConfettiOptions options) {
             this.sprite = spriteSet;
+            this.options = options;
+        }
+
+        public static ParticleFactoryRegistry.PendingParticleFactory<SimpleParticleType> customProvider(ConfettiOptions options) {
+            return (FabricSpriteProvider spriteSet) -> new Provider(spriteSet, options);
         }
 
         @Override
         public Particle createParticle(SimpleParticleType simpleParticleType, ClientLevel clientLevel, double x, double y, double z, double dX, double dY, double dZ) {
-            if(!ConfettiConfig.ENABLED) {
+            if (!ConfettiConfig.ENABLED) {
                 return null;
             }
 
-            ConfettiPieceParticle overlayParticle = new ConfettiPieceParticle(clientLevel, x, y, z, dX, dY, dZ);
+            ConfettiPieceParticle overlayParticle = new ConfettiPieceParticle(clientLevel, x, y, z, dX, dY, dZ, options);
             overlayParticle.pickSprite(this.sprite);
             return overlayParticle;
         }
@@ -41,19 +52,13 @@ public class ConfettiParticle {
         Quaternionf oldRotation;
         Vector3f rotationAxis;
         float rotationSpeed;
+        ConfettiOptions options;
 
-        static final int MAX_LIFETIME = 2500;
-        static final int MAX_LIFETIME_ON_FLOOR = 350;
-        static final float TERMINAL_VELOCITY = .24f;
-        static final float GRAVITY = -0.04f;
-        static final double MAX_ROTATION_SPEED = .5;
-        static final float HORIZONTAL_SPEED = 0.04f;
-
-        ConfettiPieceParticle(ClientLevel clientLevel, double x, double y, double z, double dX, double dY, double dZ) {
+        ConfettiPieceParticle(ClientLevel clientLevel, double x, double y, double z, double dX, double dY, double dZ, ConfettiOptions options) {
             super(clientLevel, x, y, z);
 
-            this.lifetime = MAX_LIFETIME;
-            this.gravity = GRAVITY;
+            this.lifetime = options.maxLifetime();
+            this.gravity = options.gravity();
 
             this.xd = dX;
             this.yd = dY;
@@ -63,9 +68,11 @@ public class ConfettiParticle {
             this.oldRotation = this.rotation;
             this.rotation.rotateXYZ((float) (Math.random() * Math.PI), (float) (Math.random() * Math.PI), (float) (Math.random() * Math.PI));
             this.rotationAxis = new Vector3f(random.nextFloat(), random.nextFloat(), random.nextFloat()).normalize();
-            this.rotationSpeed = (float) (Math.random() * MAX_ROTATION_SPEED);
+            this.rotationSpeed = (float) (Math.random() * options.maxRotationalSpeed());
+            this.options = options;
 
-            this.setColor((float) Math.random(), (float) Math.random(), (float) Math.random());
+            var color = this.options.colorSupplier().get();
+            this.setColor(color[0], color[1], color[2]);
         }
 
         @Override
@@ -104,8 +111,8 @@ public class ConfettiParticle {
                 this.stoppedByCollision = false;
             }
 
-            if (wasStoppedByCollision && lifetime > MAX_LIFETIME_ON_FLOOR) {
-                lifetime = MAX_LIFETIME_ON_FLOOR;
+            if (wasStoppedByCollision && lifetime > options.maxLifetimeOnFloor()) {
+                lifetime = options.maxLifetimeOnFloor();
             }
 
             this.xo = this.x;
@@ -121,20 +128,20 @@ public class ConfettiParticle {
 
             this.yd += this.gravity;
 
-            if (-this.yd > TERMINAL_VELOCITY) {
-                this.yd = -TERMINAL_VELOCITY;
+            if (-this.yd > options.terminalVelocity()) {
+                this.yd = -options.terminalVelocity();
             }
 
-            this.yd += (Math.random() - .5) * HORIZONTAL_SPEED;
+            this.yd += (Math.random() - .5) * options.randomSpeed();
             this.yd -= this.yd * 0.075;
 
             this.xd -= this.xd * 0.075;
-            this.xd += (Math.random() - .5) * HORIZONTAL_SPEED;
+            this.xd += (Math.random() - .5) * options.randomSpeed();
 
             this.zd -= this.zd * 0.075;
-            this.zd += (Math.random() - .5) * HORIZONTAL_SPEED;
+            this.zd += (Math.random() - .5) * options.randomSpeed();
 
-            if(wasStoppedByCollision) {
+            if (wasStoppedByCollision) {
                 this.xd = 0;
                 this.zd = 0;
             }
@@ -156,7 +163,7 @@ public class ConfettiParticle {
         }
 
         double getOffset() {
-            return ((lifetime / (double) MAX_LIFETIME_ON_FLOOR)) * .02 + rotationAxis.x * .0015;
+            return ((lifetime / (double) options.maxLifetimeOnFloor())) * .02 + rotationAxis.x * .0015;
         }
 
         void offsetY(double offset) {
@@ -165,7 +172,7 @@ public class ConfettiParticle {
         }
 
         protected void checkLifetime() {
-            if(!ConfettiConfig.ENABLED) {
+            if (!ConfettiConfig.ENABLED) {
                 this.lifetime = 0;
             }
 
@@ -176,7 +183,7 @@ public class ConfettiParticle {
 
         @Override
         public float getQuadSize(float f) {
-            if(this.lifetime - f < 5) {
+            if (this.lifetime - f < 5) {
                 return Mth.clampedLerp(.1f, 0f, ((5 - (lifetime - f)) / 5));
             }
 
