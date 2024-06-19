@@ -36,10 +36,10 @@ public class ExtendedParticleCommand {
 
         dispatcher.register(
             base.then(
-                particle.then(pos.then(posDist.then(vel.then(velDist.then(count.executes(ctx -> handle(ParticleArgument.getParticle(ctx, "name"), getDist(ctx, "pos"), getDist(ctx, "vel"), IntegerArgumentType.getInteger(ctx, "count"), false, ctx.getSource().getServer().getPlayerList().getPlayers()))
-                    .then(literal("normal").executes(ctx -> handle(ParticleArgument.getParticle(ctx, "name"), getDist(ctx, "pos"), getDist(ctx, "vel"), IntegerArgumentType.getInteger(ctx, "count"), false, ctx.getSource().getServer().getPlayerList().getPlayers()))
+                particle.then(pos.then(posDist.then(vel.then(velDist.then(count.executes(ctx -> handle(ParticleArgument.getParticle(ctx, "name"), getDist(ctx, "pos"), getDist(ctx, "vel"), IntegerArgumentType.getInteger(ctx, "count"), false, ctx.getSource().getLevel().players()))
+                    .then(literal("normal").executes(ctx -> handle(ParticleArgument.getParticle(ctx, "name"), getDist(ctx, "pos"), getDist(ctx, "vel"), IntegerArgumentType.getInteger(ctx, "count"), false, ctx.getSource().getLevel().players()))
                         .then(viewers.executes(ctx -> handle(ParticleArgument.getParticle(ctx, "name"), getDist(ctx, "pos"), getDist(ctx, "vel"), IntegerArgumentType.getInteger(ctx, "count"), false, EntityArgument.getPlayers(ctx, "viewers")))))
-                    .then(literal("force").executes(ctx -> handle(ParticleArgument.getParticle(ctx, "name"), getDist(ctx, "pos"), getDist(ctx, "vel"), IntegerArgumentType.getInteger(ctx, "count"), true, ctx.getSource().getServer().getPlayerList().getPlayers()))
+                    .then(literal("force").executes(ctx -> handle(ParticleArgument.getParticle(ctx, "name"), getDist(ctx, "pos"), getDist(ctx, "vel"), IntegerArgumentType.getInteger(ctx, "count"), true, ctx.getSource().getLevel().players()))
                         .then(viewers.executes(ctx -> handle(ParticleArgument.getParticle(ctx, "name"), getDist(ctx, "pos"), getDist(ctx, "vel"), IntegerArgumentType.getInteger(ctx, "count"), true, EntityArgument.getPlayers(ctx, "viewers"))))))
                 ))))
             )
