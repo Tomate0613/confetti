@@ -131,13 +131,13 @@ public class ConfettiParticle {
             }
 
             this.yd -= this.yd * 0.075;
-            this.yd += (Math.random() - .5) * options.randomSpeed();
+            this.yd += (random.nextDouble() - .5) * options.randomSpeed();
 
             this.xd -= this.xd * 0.075;
-            this.xd += (Math.random() - .5) * options.randomSpeed();
+            this.xd += (random.nextDouble() - .5) * options.randomSpeed();
 
             this.zd -= this.zd * 0.075;
-            this.zd += (Math.random() - .5) * options.randomSpeed();
+            this.zd += (random.nextDouble() - .5) * options.randomSpeed();
 
             if (wasStoppedByCollision) {
                 this.xd = 0;
