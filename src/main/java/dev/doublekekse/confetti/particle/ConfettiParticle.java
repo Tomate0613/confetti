@@ -126,8 +126,10 @@ public class ConfettiParticle {
                 return;
             }
 
-            if (-this.yd < options.terminalVelocity()) {
-                this.yd += this.gravity;
+            this.yd += this.gravity;
+
+            if (-this.yd > options.terminalVelocity()) {
+                this.yd = -options.terminalVelocity();
             }
 
             this.yd -= this.yd * 0.075;

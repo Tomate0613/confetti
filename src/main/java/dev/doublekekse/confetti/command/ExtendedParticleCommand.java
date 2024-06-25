@@ -47,9 +47,7 @@ public class ExtendedParticleCommand {
     }
 
     private static int handle(ParticleOptions particle, Vec3Dist pos, Vec3Dist vel, int count, boolean force, Collection<ServerPlayer> viewers) {
-        viewers.forEach(viewer -> {
-            ServerPlayNetworking.send(viewer, new ExtendedParticlePacket(pos, vel, count, force, particle));
-        });
+        viewers.forEach(viewer -> ServerPlayNetworking.send(viewer, new ExtendedParticlePacket(pos, vel, count, force, particle)));
 
         return 1;
     }
