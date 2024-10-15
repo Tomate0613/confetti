@@ -2,13 +2,13 @@ package dev.doublekekse.confetti.packet;
 
 import dev.doublekekse.confetti.Confetti;
 import dev.doublekekse.confetti.math.Vec3Dist;
-import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
+import net.fabricmc.fabric.api.networking.v1.PacketSender;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.multiplayer.ClientPacketListener;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
-import net.minecraft.network.RegistryFriendlyByteBuf;
-import net.minecraft.network.codec.StreamCodec;
-import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.resources.ResourceLocation;
 
 public record ExtendedParticlePacket(
     Vec3Dist posDist,
@@ -17,34 +17,35 @@ public record ExtendedParticlePacket(
     int count,
     boolean overrideLimiter,
     ParticleOptions particle
-) implements CustomPacketPayload {
-    public static final StreamCodec<RegistryFriendlyByteBuf, ExtendedParticlePacket> STREAM_CODEC = CustomPacketPayload.codec(ExtendedParticlePacket::write, ExtendedParticlePacket::new);
-    public static final Type<ExtendedParticlePacket> TYPE = new Type<>(Confetti.identifier("extended_particle_packet"));
+) {
+    public static final ResourceLocation TYPE = Confetti.identifier("extended_particle_packet");
 
-    private ExtendedParticlePacket(RegistryFriendlyByteBuf friendlyByteBuf) {
+    private ExtendedParticlePacket(FriendlyByteBuf friendlyByteBuf) {
         this(
             Vec3Dist.read(friendlyByteBuf),
             Vec3Dist.read(friendlyByteBuf),
 
             friendlyByteBuf.readInt(),
             friendlyByteBuf.readBoolean(),
-            ParticleTypes.STREAM_CODEC.decode(friendlyByteBuf)
+            friendlyByteBuf.readWithCodec(ParticleTypes.CODEC)
         );
     }
 
-    private void write(RegistryFriendlyByteBuf friendlyByteBuf) {
+    public void write(FriendlyByteBuf friendlyByteBuf) {
         posDist.write(friendlyByteBuf);
         velocityDist.write(friendlyByteBuf);
 
         friendlyByteBuf.writeInt(count);
         friendlyByteBuf.writeBoolean(overrideLimiter);
-        ParticleTypes.STREAM_CODEC.encode(friendlyByteBuf, this.particle);
+        friendlyByteBuf.writeWithCodec(ParticleTypes.CODEC, this.particle);
     }
 
 
-    public static void handle(ExtendedParticlePacket payload, ClientPlayNetworking.Context context) {
+    public static void handle(Minecraft client, ClientPacketListener handler, FriendlyByteBuf buf, PacketSender responseSender) {
+        var payload = new ExtendedParticlePacket(buf);
+
         for (int i = 0; i < payload.count; i++) {
-            context.player().level().addParticle(
+            client.player.level.addParticle(
                 payload.particle,
                 payload.overrideLimiter,
 
@@ -57,11 +58,5 @@ public record ExtendedParticlePacket(
                 payload.velocityDist.randomZ()
             );
         }
-    }
-
-
-    @Override
-    public @NotNull Type<? extends CustomPacketPayload> type() {
-        return TYPE;
     }
 }

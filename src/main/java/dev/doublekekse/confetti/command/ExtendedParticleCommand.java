@@ -5,8 +5,8 @@ import com.mojang.brigadier.arguments.IntegerArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import dev.doublekekse.confetti.math.Vec3Dist;
 import dev.doublekekse.confetti.packet.ExtendedParticlePacket;
+import net.fabricmc.fabric.api.networking.v1.PacketByteBufs;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.ParticleArgument;
@@ -20,10 +20,10 @@ import static net.minecraft.commands.Commands.argument;
 import static net.minecraft.commands.Commands.literal;
 
 public class ExtendedParticleCommand {
-    public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext commandBuildContext) {
+    public static void register(CommandDispatcher<CommandSourceStack> dispatcher) {
         var base = literal("extended_particle").requires(source -> source.hasPermission(2));
 
-        var particle = argument("name", ParticleArgument.particle(commandBuildContext));
+        var particle = argument("name", ParticleArgument.particle());
 
         var pos = argument("pos", Vec3Argument.vec3());
         var posDist = argument("posDist", Vec3Argument.vec3(false));
@@ -47,7 +47,10 @@ public class ExtendedParticleCommand {
     }
 
     private static int handle(ParticleOptions particle, Vec3Dist pos, Vec3Dist vel, int count, boolean force, Collection<ServerPlayer> viewers) {
-        viewers.forEach(viewer -> ServerPlayNetworking.send(viewer, new ExtendedParticlePacket(pos, vel, count, force, particle)));
+        var packet = new ExtendedParticlePacket(pos, vel, count, force, particle);
+        var packetByteBuf = PacketByteBufs.create();
+        packet.write(packetByteBuf);
+        viewers.forEach(viewer -> ServerPlayNetworking.send(viewer, ExtendedParticlePacket.TYPE, packetByteBuf));
 
         return 1;
     }

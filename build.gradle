@@ -21,6 +21,8 @@ repositories {
         name = "Terraformers"
         url = "https://maven.terraformersmc.com/"
     }
+
+    mavenCentral()
 }
 
 loom {
@@ -37,6 +39,9 @@ dependencies {
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
 
     modImplementation("com.terraformersmc:modmenu:${project.modmenu_version}")
+
+    implementation "org.joml:joml:1.10.8"
+    include "org.joml:joml:1.10.8"
 }
 
 processResources {
@@ -77,7 +82,7 @@ java {
 
 jar {
     from("LICENSE") {
-        rename { "${it}_${project.archivesBaseName}"}
+        rename { "${it}_${project.archivesBaseName}" }
     }
 }
 

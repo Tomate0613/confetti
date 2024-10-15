@@ -31,11 +31,16 @@ public record Vec3Dist(Vec3 mean, Vec3 stdDev) {
     }
 
     public void write(FriendlyByteBuf friendlyByteBuf) {
-        friendlyByteBuf.writeVec3(mean);
-        friendlyByteBuf.writeVec3(stdDev);
+        friendlyByteBuf.writeDouble(mean.x);
+        friendlyByteBuf.writeDouble(mean.y);
+        friendlyByteBuf.writeDouble(mean.z);
+
+        friendlyByteBuf.writeDouble(stdDev.x);
+        friendlyByteBuf.writeDouble(stdDev.y);
+        friendlyByteBuf.writeDouble(stdDev.z);
     }
 
     public static Vec3Dist read(FriendlyByteBuf friendlyByteBuf) {
-        return new Vec3Dist(friendlyByteBuf.readVec3(), friendlyByteBuf.readVec3());
+        return new Vec3Dist(new Vec3(friendlyByteBuf.readDouble(), friendlyByteBuf.readDouble(), friendlyByteBuf.readDouble()), new Vec3(friendlyByteBuf.readDouble(), friendlyByteBuf.readDouble(), friendlyByteBuf.readDouble()));
     }
 }

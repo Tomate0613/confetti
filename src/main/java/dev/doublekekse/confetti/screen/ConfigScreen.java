@@ -23,31 +23,31 @@ public class ConfigScreen extends Screen {
         final var buttonWidth = 150;
         final var buttonHeight = 20;
 
-        var toggleParticlesButton = Button.builder(
-                getToggleString(),
-                button -> {
-                    ConfettiConfig.ENABLED = !ConfettiConfig.ENABLED;
+        var toggleParticlesButton = new Button(
+            width / 2 - buttonWidth / 2, height / 2 - buttonHeight / 2, buttonWidth, buttonHeight,
+            getToggleString(),
+            button -> {
+                ConfettiConfig.ENABLED = !ConfettiConfig.ENABLED;
 
-                    button.setMessage(getToggleString());
+                button.setMessage(getToggleString());
+            }
+        );
+
+        var doneButton = new Button(
+            width / 2 - buttonWidth / 2, height - buttonHeight - 10, buttonWidth, buttonHeight,
+            Component.literal("Done"),
+            button -> {
+                try {
+                    ConfettiConfig.save();
+                    onClose();
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
                 }
-            )
-            .bounds(width / 2 - buttonWidth / 2, height / 2 - buttonHeight / 2, buttonWidth, buttonHeight);
+            }
+        );
 
-        var doneButton = Button.builder(
-                Component.literal("Done"),
-                button -> {
-                    try {
-                        ConfettiConfig.save();
-                        onClose();
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                }
-            )
-            .bounds(width / 2 - buttonWidth / 2, height - buttonHeight - 10, buttonWidth, buttonHeight);
-
-        this.addRenderableWidget(toggleParticlesButton.build());
-        this.addRenderableWidget(doneButton.build());
+        this.addRenderableWidget(toggleParticlesButton);
+        this.addRenderableWidget(doneButton);
     }
 
     Component getToggleString() {

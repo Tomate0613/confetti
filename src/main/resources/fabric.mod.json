@@ -4,7 +4,9 @@
   "version": "${version}",
   "name": "Confetti",
   "description": "Adds confetti particles to the game, which can be used by other mods",
-  "authors": [],
+  "authors": [
+    "Tomate0613"
+  ],
   "contact": {
     "repo": "https://github.com/Tomate0613/confetti"
   },
@@ -28,7 +30,7 @@
   "depends": {
     "fabricloader": ">=${loader_version}",
     "fabric": "*",
-    "minecraft": "1.21.x"
+    "minecraft": "1.19.2"
   },
   "accessWidener": "confetti.accesswidener"
 }

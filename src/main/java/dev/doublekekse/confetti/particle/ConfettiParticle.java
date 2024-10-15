@@ -1,6 +1,7 @@
 package dev.doublekekse.confetti.particle;
 
 import com.mojang.blaze3d.vertex.VertexConsumer;
+import com.mojang.math.Quaternion;
 import dev.doublekekse.confetti.config.ConfettiConfig;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
@@ -11,6 +12,7 @@ import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -94,9 +96,10 @@ public class ConfettiParticle {
 
         Quaternionf faceTowardsCamera(Quaternionf rotation, Camera camera) {
             Vector3f particleForward = new Vector3f(0, 0, -1).rotate(rotation);
-            Vector3f cameraDelta = new Vector3f((float) x, (float) y, (float) z).sub(camera.getPosition().toVector3f());
+            var cameraPos = camera.getPosition();
+            Vector3f cameraDelta = new Vector3f((float) x, (float) y, (float) z).sub(new Vector3f((float) cameraPos.x, (float) cameraPos.y, (float) cameraPos.z));
 
-            if (particleForward.dot(cameraDelta) < 0) {
+            if (particleForward.dot(cameraDelta) > 0) {
                 rotation.rotateY((float) Math.PI);
             }
 
@@ -158,8 +161,37 @@ public class ConfettiParticle {
 
             offsetY(offset);
             var rotation = getRotation(camera, tickPercentage);
-            this.renderRotatedQuad(vertexConsumer, camera, rotation, tickPercentage);
+            this.renderRotatedQuad(vertexConsumer, camera, new Quaternion(rotation.x, rotation.y, rotation.z, rotation.w), tickPercentage);
             offsetY(-offset);
+        }
+
+        private void renderRotatedQuad(VertexConsumer vertexConsumer, Camera camera, Quaternion rotation, float tickPercentage) {
+            Vec3 vec3 = camera.getPosition();
+            float g = (float) (Mth.lerp((double) tickPercentage, this.xo, this.x) - vec3.x());
+            float h = (float) (Mth.lerp((double) tickPercentage, this.yo, this.y) - vec3.y());
+            float i = (float) (Mth.lerp((double) tickPercentage, this.zo, this.z) - vec3.z());
+
+            com.mojang.math.Vector3f vector3f = new com.mojang.math.Vector3f(-1.0F, -1.0F, 0.0F);
+            vector3f.transform(rotation);
+            com.mojang.math.Vector3f[] vector3fs = new com.mojang.math.Vector3f[]{new com.mojang.math.Vector3f(-1.0F, -1.0F, 0.0F), new com.mojang.math.Vector3f(-1.0F, 1.0F, 0.0F), new com.mojang.math.Vector3f(1.0F, 1.0F, 0.0F), new com.mojang.math.Vector3f(1.0F, -1.0F, 0.0F)};
+            float k = this.getQuadSize(tickPercentage);
+
+            for (int l = 0; l < 4; ++l) {
+                com.mojang.math.Vector3f vector3f2 = vector3fs[l];
+                vector3f2.transform(rotation);
+                vector3f2.mul(k);
+                vector3f2.add(g, h, i);
+            }
+
+            float m = this.getU0();
+            float n = this.getU1();
+            float o = this.getV0();
+            float p = this.getV1();
+            int q = this.getLightColor(tickPercentage);
+            vertexConsumer.vertex((double) vector3fs[0].x(), (double) vector3fs[0].y(), (double) vector3fs[0].z()).uv(n, p).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(q).endVertex();
+            vertexConsumer.vertex((double) vector3fs[1].x(), (double) vector3fs[1].y(), (double) vector3fs[1].z()).uv(n, o).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(q).endVertex();
+            vertexConsumer.vertex((double) vector3fs[2].x(), (double) vector3fs[2].y(), (double) vector3fs[2].z()).uv(m, o).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(q).endVertex();
+            vertexConsumer.vertex((double) vector3fs[3].x(), (double) vector3fs[3].y(), (double) vector3fs[3].z()).uv(m, p).color(this.rCol, this.gCol, this.bCol, this.alpha).uv2(q).endVertex();
         }
 
         double getOffset() {
