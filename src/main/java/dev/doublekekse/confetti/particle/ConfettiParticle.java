@@ -7,10 +7,13 @@ import net.fabricmc.api.Environment;
 import net.fabricmc.fabric.api.client.particle.v1.FabricSpriteProvider;
 import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
 import net.minecraft.client.Camera;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
+import net.minecraft.core.Direction;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
+import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
@@ -146,10 +149,43 @@ public class ConfettiParticle {
                 this.zd = 0;
             }
 
+            collisions();
+
             this.move(this.xd, this.yd, this.zd);
 
             Quaternionf deltaRotation = new Quaternionf().rotateAxis(rotationSpeed, rotationAxis.x, rotationAxis.y, rotationAxis.z);
             rotation.mul(deltaRotation);
+        }
+
+        void collisions() {
+            var player = Minecraft.getInstance().player;
+
+            if (player != null) {
+                var pos = player.position();
+                var dir = player.getDeltaMovement().with(Direction.Axis.Y, 0);
+
+                var dX = pos.x - this.x;
+                var dY = pos.y - this.y;
+                var dZ = pos.z - this.z;
+
+                collision(dX, dY, dZ, 1, player.getBbHeight(), dir);
+            }
+        }
+
+        void collision(double dX, double dY, double dZ, double radius, double height, Vec3 dir) {
+            if (dX * dX + dZ * dZ < radius * radius && dY >= 0 && dY <= height) {
+                double dist = Math.sqrt(dX * dX + dZ * dZ);
+
+                if (dist > 0) {
+                    double pushFactor = (radius - dist) / radius;
+                    double normX = dX / dist;
+                    double normZ = dZ / dist;
+
+                    this.xd -= normX * pushFactor * dir.length();
+                    this.yd += (dir.length() * 1.3) * pushFactor;
+                    this.zd -= normZ * pushFactor * dir.length();
+                }
+            }
         }
 
         @Override
