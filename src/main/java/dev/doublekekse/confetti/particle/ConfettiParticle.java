@@ -173,7 +173,7 @@ public class ConfettiParticle {
         }
 
         void collision(double dX, double dY, double dZ, double radius, double height, Vec3 dir) {
-            if (dX * dX + dZ * dZ < radius * radius && dY >= 0 && dY <= height) {
+            if (dX * dX + dZ * dZ < radius * radius && dY >= -0.1 && dY <= height) {
                 double dist = Math.sqrt(dX * dX + dZ * dZ);
 
                 if (dist > 0) {
