@@ -164,9 +164,9 @@ public class ConfettiParticle {
                 var pos = player.position();
                 var dir = player.getDeltaMovement().with(Direction.Axis.Y, 0);
 
-                var dX = pos.x - this.x;
-                var dY = pos.y - this.y;
-                var dZ = pos.z - this.z;
+                var dX = this.x - pos.x;
+                var dY = this.y - pos.y;
+                var dZ = this.z - pos.z;
 
                 collision(dX, dY, dZ, 1, player.getBbHeight(), dir);
             }
@@ -181,9 +181,9 @@ public class ConfettiParticle {
                     double normX = dX / dist;
                     double normZ = dZ / dist;
 
-                    this.xd -= normX * pushFactor * dir.length();
+                    this.xd += normX * pushFactor * dir.length();
                     this.yd += (dir.length() * 1.3) * pushFactor;
-                    this.zd -= normZ * pushFactor * dir.length();
+                    this.zd += normZ * pushFactor * dir.length();
                 }
             }
         }
