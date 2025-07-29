@@ -16,6 +16,7 @@ public record ExtendedParticlePacket(
 
     int count,
     boolean overrideLimiter,
+    boolean alwaysShow,
     ParticleOptions particle
 ) implements CustomPacketPayload {
     public static final StreamCodec<RegistryFriendlyByteBuf, ExtendedParticlePacket> STREAM_CODEC = CustomPacketPayload.codec(ExtendedParticlePacket::write, ExtendedParticlePacket::new);
@@ -28,6 +29,7 @@ public record ExtendedParticlePacket(
 
             friendlyByteBuf.readInt(),
             friendlyByteBuf.readBoolean(),
+            friendlyByteBuf.readBoolean(),
             ParticleTypes.STREAM_CODEC.decode(friendlyByteBuf)
         );
     }
@@ -38,6 +40,7 @@ public record ExtendedParticlePacket(
 
         friendlyByteBuf.writeInt(count);
         friendlyByteBuf.writeBoolean(overrideLimiter);
+        friendlyByteBuf.writeBoolean(alwaysShow);
         ParticleTypes.STREAM_CODEC.encode(friendlyByteBuf, this.particle);
     }
 
@@ -47,6 +50,7 @@ public record ExtendedParticlePacket(
             context.player().level().addParticle(
                 payload.particle,
                 payload.overrideLimiter,
+                payload.alwaysShow,
 
                 payload.posDist.randomX(),
                 payload.posDist.randomY(),
