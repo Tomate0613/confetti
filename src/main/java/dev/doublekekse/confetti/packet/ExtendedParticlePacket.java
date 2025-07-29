@@ -22,6 +22,19 @@ public record ExtendedParticlePacket(
     public static final StreamCodec<RegistryFriendlyByteBuf, ExtendedParticlePacket> STREAM_CODEC = CustomPacketPayload.codec(ExtendedParticlePacket::write, ExtendedParticlePacket::new);
     public static final Type<ExtendedParticlePacket> TYPE = new Type<>(Confetti.identifier("extended_particle_packet"));
 
+    public ExtendedParticlePacket(
+        Vec3Dist posDist,
+        Vec3Dist velocityDist,
+
+        int count,
+        boolean overrideLimiter,
+        ParticleOptions particle
+    ) {
+        this(
+            posDist, velocityDist, count, overrideLimiter, false, particle
+        );
+    }
+
     private ExtendedParticlePacket(RegistryFriendlyByteBuf friendlyByteBuf) {
         this(
             Vec3Dist.read(friendlyByteBuf),
