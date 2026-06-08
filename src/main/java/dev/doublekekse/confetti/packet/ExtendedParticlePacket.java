@@ -6,6 +6,7 @@ import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import net.minecraft.core.particles.ParticleOptions;
 import net.minecraft.core.particles.ParticleTypes;
 import net.minecraft.network.RegistryFriendlyByteBuf;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import org.jetbrains.annotations.NotNull;
@@ -19,7 +20,16 @@ public record ExtendedParticlePacket(
     boolean alwaysShow,
     ParticleOptions particle
 ) implements CustomPacketPayload {
-    public static final StreamCodec<RegistryFriendlyByteBuf, ExtendedParticlePacket> STREAM_CODEC = CustomPacketPayload.codec(ExtendedParticlePacket::write, ExtendedParticlePacket::new);
+    public static final StreamCodec<RegistryFriendlyByteBuf, ExtendedParticlePacket> STREAM_CODEC = StreamCodec.composite(
+        Vec3Dist.STREAM_CODEC, ExtendedParticlePacket::posDist,
+        Vec3Dist.STREAM_CODEC, ExtendedParticlePacket::velocityDist,
+        ByteBufCodecs.INT, ExtendedParticlePacket::count,
+        ByteBufCodecs.BOOL, ExtendedParticlePacket::overrideLimiter,
+        ByteBufCodecs.BOOL, ExtendedParticlePacket::alwaysShow,
+        ParticleTypes.STREAM_CODEC, ExtendedParticlePacket::particle,
+        ExtendedParticlePacket::new
+    );
+
     public static final Type<ExtendedParticlePacket> TYPE = new Type<>(Confetti.identifier("extended_particle_packet"));
 
     public ExtendedParticlePacket(
@@ -34,29 +44,6 @@ public record ExtendedParticlePacket(
             posDist, velocityDist, count, overrideLimiter, false, particle
         );
     }
-
-    private ExtendedParticlePacket(RegistryFriendlyByteBuf friendlyByteBuf) {
-        this(
-            Vec3Dist.read(friendlyByteBuf),
-            Vec3Dist.read(friendlyByteBuf),
-
-            friendlyByteBuf.readInt(),
-            friendlyByteBuf.readBoolean(),
-            friendlyByteBuf.readBoolean(),
-            ParticleTypes.STREAM_CODEC.decode(friendlyByteBuf)
-        );
-    }
-
-    private void write(RegistryFriendlyByteBuf friendlyByteBuf) {
-        posDist.write(friendlyByteBuf);
-        velocityDist.write(friendlyByteBuf);
-
-        friendlyByteBuf.writeInt(count);
-        friendlyByteBuf.writeBoolean(overrideLimiter);
-        friendlyByteBuf.writeBoolean(alwaysShow);
-        ParticleTypes.STREAM_CODEC.encode(friendlyByteBuf, this.particle);
-    }
-
 
     public static void handle(ExtendedParticlePacket payload, ClientPlayNetworking.Context context) {
         for (int i = 0; i < payload.count; i++) {
@@ -75,7 +62,6 @@ public record ExtendedParticlePacket(
             );
         }
     }
-
 
     @Override
     public @NotNull Type<? extends CustomPacketPayload> type() {

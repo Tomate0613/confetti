@@ -8,6 +8,7 @@ import dev.doublekekse.confetti.packet.ExtendedParticlePacket;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.commands.CommandBuildContext;
 import net.minecraft.commands.CommandSourceStack;
+import net.minecraft.commands.Commands;
 import net.minecraft.commands.arguments.EntityArgument;
 import net.minecraft.commands.arguments.ParticleArgument;
 import net.minecraft.commands.arguments.coordinates.Vec3Argument;
@@ -21,7 +22,7 @@ import static net.minecraft.commands.Commands.literal;
 
 public class ExtendedParticleCommand {
     public static void register(CommandDispatcher<CommandSourceStack> dispatcher, CommandBuildContext commandBuildContext) {
-        var base = literal("extended_particle").requires(source -> source.hasPermission(2));
+        var base = literal("extended_particle").requires(Commands.hasPermission(Commands.LEVEL_GAMEMASTERS));
 
         var particle = argument("name", ParticleArgument.particle(commandBuildContext));
 

@@ -1,22 +1,24 @@
 package dev.doublekekse.confetti.particle;
 
-import com.mojang.blaze3d.vertex.VertexConsumer;
 import dev.doublekekse.confetti.config.ConfettiConfig;
 import net.fabricmc.api.EnvType;
 import net.fabricmc.api.Environment;
-import net.fabricmc.fabric.api.client.particle.v1.FabricSpriteProvider;
-import net.fabricmc.fabric.api.client.particle.v1.ParticleFactoryRegistry;
+import net.fabricmc.fabric.api.client.particle.v1.ParticleProviderRegistry;
 import net.minecraft.client.Camera;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.multiplayer.ClientLevel;
 import net.minecraft.client.particle.*;
+import net.minecraft.client.renderer.state.level.QuadParticleRenderState;
+import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
 import net.minecraft.world.phys.Vec3;
-import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
+import org.jspecify.annotations.NonNull;
+import org.jspecify.annotations.Nullable;
 
 public class ConfettiParticle {
     @Environment(value = EnvType.CLIENT)
@@ -33,32 +35,30 @@ public class ConfettiParticle {
             this.options = options;
         }
 
-        public static ParticleFactoryRegistry.PendingParticleFactory<SimpleParticleType> customProvider(ConfettiOptions options) {
-            return (FabricSpriteProvider spriteSet) -> new Provider(spriteSet, options);
+        public static ParticleProviderRegistry.PendingParticleProvider<SimpleParticleType> customProvider(ConfettiOptions options) {
+            return (spriteSet) -> new Provider(spriteSet, options);
         }
 
         @Override
-        public Particle createParticle(SimpleParticleType simpleParticleType, ClientLevel clientLevel, double x, double y, double z, double dX, double dY, double dZ) {
+        public @Nullable Particle createParticle(@NonNull SimpleParticleType options, @NonNull ClientLevel level, double x, double y, double z, double xAux, double yAux, double zAux, @NonNull RandomSource random) {
             if (!ConfettiConfig.ENABLED) {
                 return null;
             }
 
-            ConfettiPieceParticle overlayParticle = new ConfettiPieceParticle(clientLevel, x, y, z, dX, dY, dZ, options);
-            overlayParticle.pickSprite(this.sprite);
-            return overlayParticle;
+            return new ConfettiPieceParticle(level, x, y, z, xAux, yAux, zAux, this.options, this.sprite.get(random));
         }
     }
 
     @Environment(value = EnvType.CLIENT)
-    public static class ConfettiPieceParticle extends TextureSheetParticle {
+    public static class ConfettiPieceParticle extends SingleQuadParticle {
         Quaternionf rotation;
         Quaternionf oldRotation;
         Vector3f rotationAxis;
         float rotationSpeed;
         ConfettiOptions options;
 
-        ConfettiPieceParticle(ClientLevel clientLevel, double x, double y, double z, double dX, double dY, double dZ, ConfettiOptions options) {
-            super(clientLevel, x, y, z);
+        ConfettiPieceParticle(ClientLevel clientLevel, double x, double y, double z, double dX, double dY, double dZ, ConfettiOptions options, TextureAtlasSprite sprite) {
+            super(clientLevel, x, y, z, sprite);
 
             this.lifetime = options.maxLifetime();
             this.gravity = options.gravity();
@@ -78,11 +78,6 @@ public class ConfettiParticle {
             this.setColor(color[0], color[1], color[2]);
         }
 
-        @Override
-        public @NotNull ParticleRenderType getRenderType() {
-            return ParticleRenderType.PARTICLE_SHEET_OPAQUE;
-        }
-
         Quaternionf getRotation(Camera camera, float tickPercentage) {
             if (stoppedByCollision) {
                 Quaternionf quaternionf = new Quaternionf();
@@ -97,7 +92,7 @@ public class ConfettiParticle {
 
         Quaternionf faceTowardsCamera(Quaternionf rotation, Camera camera) {
             Vector3f particleForward = new Vector3f(0, 0, -1).rotate(rotation);
-            Vector3f cameraDelta = new Vector3f((float) x, (float) y, (float) z).sub(camera.getPosition().toVector3f());
+            Vector3f cameraDelta = new Vector3f((float) x, (float) y, (float) z).sub(camera.position().toVector3f());
 
             if (particleForward.dot(cameraDelta) < 0) {
                 rotation.rotateY((float) Math.PI);
@@ -189,12 +184,12 @@ public class ConfettiParticle {
         }
 
         @Override
-        public void render(VertexConsumer vertexConsumer, Camera camera, float tickPercentage) {
+        public void extract(@NonNull QuadParticleRenderState particleTypeRenderState, @NonNull Camera camera, float partialTickTime) {
             var offset = getOffset();
 
             offsetY(offset);
-            var rotation = getRotation(camera, tickPercentage);
-            this.renderRotatedQuad(vertexConsumer, camera, rotation, tickPercentage);
+            var rotation = getRotation(camera, partialTickTime);
+            this.extractRotatedQuad(particleTypeRenderState, camera, rotation, partialTickTime);
             offsetY(-offset);
         }
 
@@ -224,6 +219,11 @@ public class ConfettiParticle {
             }
 
             return .1f;
+        }
+
+        @Override
+        protected @NonNull Layer getLayer() {
+            return Layer.OPAQUE;
         }
     }
 }

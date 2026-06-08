@@ -28,7 +28,7 @@
   "depends": {
     "fabricloader": ">=${loader_version}",
     "fabric-api": "*",
-    "minecraft": "1.21.x"
+    "minecraft": "${minecraft_version}"
   },
-  "accessWidener": "confetti.accesswidener"
+  "accessWidener": "confetti.classtweaker"
 }

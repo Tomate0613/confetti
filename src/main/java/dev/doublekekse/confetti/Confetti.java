@@ -10,7 +10,7 @@ import net.fabricmc.fabric.api.particle.v1.FabricParticleTypes;
 import net.minecraft.core.Registry;
 import net.minecraft.core.particles.SimpleParticleType;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 
 import java.io.IOException;
 
@@ -21,7 +21,7 @@ public class Confetti implements ModInitializer {
     @Override
     public void onInitialize() {
         Registry.register(BuiltInRegistries.PARTICLE_TYPE, identifier("confetti"), CONFETTI);
-        PayloadTypeRegistry.playS2C().register(ExtendedParticlePacket.TYPE, ExtendedParticlePacket.STREAM_CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(ExtendedParticlePacket.TYPE, ExtendedParticlePacket.STREAM_CODEC);
 
         try {
             ConfettiConfig.load();
@@ -37,7 +37,7 @@ public class Confetti implements ModInitializer {
         );
     }
 
-    public static ResourceLocation identifier(String path) {
-        return ResourceLocation.fromNamespaceAndPath(MOD_ID, path);
+    public static Identifier identifier(String path) {
+        return Identifier.fromNamespaceAndPath(MOD_ID, path);
     }
 }
